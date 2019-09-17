@@ -1,69 +1,124 @@
+// Required header files
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
-int sudukoBoard[9][9] = {{3, 8, 0, 7, 0, 0, 6, 0, 2}, {4, 0, 2, 0, 8, 0, 0, 3, 0}, {1, 7, 5, 6, 0, 0, 4, 9, 0}, {0, 0, 0, 0, 0, 9, 0, 7, 0}, {7, 0, 0, 8, 0, 3, 0, 0, 9}, {0, 9, 0, 5, 0, 0, 0, 0, 0}, {0, 1, 3, 0, 0, 8, 9, 6, 4}, {0, 2, 0, 0, 5, 0, 8, 0, 3}, {6, 0, 8, 0, 0, 1, 0, 2, 5}};
-int rowPos = 0, columnPos = 0;
+// To do:
+//  - fix segmentation fault
 
+// Create a reversed linked list
+typedef struct node
+{
+  int row, col, n;
+  struct node *prev;
+} node;
+
+node *latest = NULL;
+
+// Global suduko board, row and column position
+int BOARD[9][9] = {{5, 3, 0, 0, 7, 0, 0, 0, 0}, {6, 0, 0, 1, 9, 5, 0, 0, 0}, {0, 9, 8, 0, 0, 0, 0, 6, 0}, {8, 0, 0, 0, 6, 0, 0, 0, 3}, {4, 0, 0, 8, 0, 3, 0, 0, 1}, {7, 0, 0, 0, 2, 0, 0, 0, 6}, {0, 6, 0, 0, 0, 0, 2, 8, 0}, {0, 0, 0, 4, 1, 9, 0, 0, 5}, {0, 0, 0, 0, 8, 0, 0, 7, 9}};
+int ROW = 0, COLUMN = 0;
+
+// Check if there's a zero (empty cell)
 bool checkZero(void)
 {
-  for (; rowPos < 9; rowPos++)
+  while (ROW < 9)
   {
-    for (; columnPos < 9; columnPos++)
+    while (COLUMN < 9)
     {
-      if (sudukoBoard[rowPos][columnPos] == 0)
+      if (BOARD[ROW][COLUMN] == 0)
       {
         return true;
       }
+      COLUMN++;
     }
+    ROW++;
   }
   return false;
 }
 
-void incrementByOne(void)
-{
-  if (checkZero() == true)
-  {
-    sudukoBoard[rowPos][columnPos]++;
-  }
-}
-
-bool checkRow(void)
+// Check row constraint
+bool checkRow(int row, int col)
 {
   for (int i = 0; i < 9; i++)
   {
-    if (sudukoBoard[rowPos][columnPos] == sudukoBoard[rowPos][i])
+    if (BOARD[row][col] == BOARD[row][i])
       return false;
   }
   return true;
 }
 
-bool checkColumn(void)
+// Check column constraint
+bool checkColumn(int row, int col)
 {
   for (int i = 0; i < 9; i++)
   {
-    if (sudukoBoard[rowPos][columnPos] == sudukoBoard[i][columnPos])
+    if (BOARD[row][col] == BOARD[i][col])
       return false;
   }
   return true;
 }
 
-bool checkBox(void)
+// Check box constraint
+bool checkBox(int row, int col)
 {
-  int i = rowPos - (rowPos % 3);
-  int j = columnPos - (columnPos % 3);
+  int i = row - (row % 3);
+  int j = col - (col % 3);
 
-  for (; i < i + 3; i++)
+  while (i < i + 3)
   {
-    for (; j < j + 3; j++)
+    while (j < j + 3)
     {
-      if (sudukoBoard[rowPos][columnPos] == sudukoBoard[i][j] && rowPos != i && columnPos != j)
+      if (BOARD[row][col] == BOARD[i][j] && row != i && col != j)
         return false;
+      j++;
+    }
+    i++;
+  }
+  return true;
+}
+
+// Solve sudoku by using backtracking (a brute force approach)
+int solveSudoku(node *currentNode)
+{
+  currentNode->n = currentNode->n + 1;
+  while (checkRow(currentNode->row, currentNode->col) == false || checkColumn(currentNode->row, currentNode->col) == false || checkBox(currentNode->row, currentNode->col) == false)
+  {
+    currentNode->n = currentNode->n + 1;
+    if (currentNode->n == 10)
+    {
+      currentNode->n = 0;
+      (currentNode->prev)->n = solveSudoku(currentNode->prev);
+      currentNode->n = currentNode->n + 1;
     }
   }
-  return true;
+  return currentNode->n;
 }
 
+// Main function
 int main(void)
 {
+  // Keep on solving until we reach the final zero (empty cell)
+  while (checkZero() == true)
+  {
+    node *newNode = malloc(sizeof(node));
+    newNode->prev = latest;
+    latest = newNode;
+
+    newNode->row = ROW;
+    newNode->col = COLUMN;
+    newNode->n = solveSudoku(newNode);
+  }
+
+  // Print solved sudoku board
+  for (int i = 0; i < 9; i++)
+  {
+    for (int j = 0; j < 9; j++)
+    {
+      printf("%d ", BOARD[i][j]);
+    }
+    printf("\n");
+  }
+
   return 0;
 }
