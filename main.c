@@ -9,24 +9,25 @@ Purpose: Main program file
 
 #include "constraints/constraints.h"
 
-// Solve sudoku by using backtracking (a brute force approach)
-bool solveSudoku(int board[], int pos/*, int emptyCellIndices[]*/)
+// Solve sudoku by using backtracking
+bool solveSudokuTillPos(int board[], int emptyCellIndex, int emptyCellPos[])
 {
   bool isSolvable = true;
+  int currentBoardPos = emptyCellPos[emptyCellIndex];
 
-  while (board[pos] <= 9 && isSolvable == true)
+  while (board[currentBoardPos] <= 9 && isSolvable == true)
   {
-    ++board[pos];
-    if (board[pos] > 9)
+    ++board[currentBoardPos];
+    if (board[currentBoardPos] > 9)
     {
-      board[pos] = 0;
-      if ((pos = findPrevious(board, pos)) == -1)
+      board[currentBoardPos] = 0;
+      if (emptyCellIndex == 0)
         isSolvable = false;
       else
-        isSolvable = solveSudoku(board, pos);
+        isSolvable = solveSudoku(board, currentBoardPos);
     }
 
-    else if (isValueValid(board, pos))
+    else if (isValueLegal(board, currentBoardPos))
     {
       isSolvable = true;
       break;
@@ -39,7 +40,20 @@ bool solveSudoku(int board[], int pos/*, int emptyCellIndices[]*/)
 // Main function
 int main(void)
 {
-  int sudokuBoard[] = {5, 3, 0, 0, 7, 0, 0, 0, 0, 6, 0, 0, 1, 9, 5, 0, 0, 0, 0, 9, 8, 0, 0, 0, 0, 6, 0, 8, 0, 0, 0, 6, 0, 0, 0, 3, 4, 0, 0, 8, 0, 3, 0, 0, 1, 7, 0, 0, 0, 2, 0, 0, 0, 6, 0, 6, 0, 0, 0, 0, 2, 8, 0, 0, 0, 0, 4, 1, 9, 0, 0, 5, 0, 0, 0, 0, 8, 0, 0, 7, 9};
-  int emptyCellIndices[] = {2, 3, 5, 6, 7, 8, 10, 11, 15, 16, 17, 18};
+  int sudokuBoard[81] = {5, 3, 0, 0, 7, 0, 0, 0, 0, 6, 0, 0, 1, 9, 5, 0, 0, 0, 0, 9, 8, 0, 0, 0, 0, 6, 0, 8, 0, 0, 0, 6, 0, 0, 0, 3, 4, 0, 0, 8, 0, 3, 0, 0, 1, 7, 0, 0, 0, 2, 0, 0, 0, 6, 0, 6, 0, 0, 0, 0, 2, 8, 0, 0, 0, 0, 4, 1, 9, 0, 0, 5, 0, 0, 0, 0, 8, 0, 0, 7, 9};
+  int emptyCellPos[81];
+  for (short int i = 0, j = 0; i < 81; ++i)
+  {
+    if (sudokuBoard[i] == 0)
+    {
+      emptyCellPos[j] = i;
+      ++j;
+    }
+  }
+
+  int i = 0;
+  while (solveSudokuTillPos(sudokuBoard, i, emptyCellPos))
+    ++i;
+
   return 0;
 }

@@ -6,9 +6,11 @@ Purpose: This file contains the definitions of functions required for constraint
 
 #include <stdbool.h>
 
+#include "constraints.h"
+
 // Check if the value at `pos` in `sudokuBoard` exists in the horizontal row
 // If exists return false else return true
-bool isHorizontallyValid(int sudokuBoard[], short int pos)
+static bool isHorizontallyValid(int sudokuBoard[], short int pos)
 {
   // First member of row where `sudokuBoard[pos]` lies
   short int startPos = 9 * (pos / 9);
@@ -22,7 +24,7 @@ bool isHorizontallyValid(int sudokuBoard[], short int pos)
 
 // Check if the value at `pos` in `sudokuBoard` exists in the vertical column
 // If exists return false else return true
-bool isVerticallyValid(int sudokuBoard[], short int pos)
+static bool isVerticallyValid(int sudokuBoard[], short int pos)
 {
   // First member of column where `sudokuBoard[pos]` lies
   short int startPos = pos % 9;
@@ -36,7 +38,7 @@ bool isVerticallyValid(int sudokuBoard[], short int pos)
 
 // Check if the value at `pos` in `sudokuBoard` exists in the 3x3 box
 // If exists return false else return true
-bool isValidInBox(int sudokuBoard[], short int pos)
+static bool isValidInBox(int sudokuBoard[], short int pos)
 {
   // Row of first member of 3x3 box where `sudokuBoard[pos]` lies
   short int boxRow = 3 * ((pos / 9) / 3);
@@ -54,4 +56,10 @@ bool isValidInBox(int sudokuBoard[], short int pos)
     }
   }
   return true;
+}
+
+// Check if the input value at `pos` is legal
+bool isValueLegal(int sudokuBoard[], short int pos)
+{
+  return isHorizontallyValid(sudokuBoard, pos) && isVerticallyValid(sudokuBoard, pos) && isValidInBox(sudokuBoard, pos);
 }
