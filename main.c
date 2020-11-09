@@ -139,5 +139,6 @@ int main(void)
     }
 
     printf("\n");
+    fclose(boardFile);
     return 0;
 }
