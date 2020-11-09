@@ -12,71 +12,92 @@ Purpose: Main program file for solving 9x9 sudoku puzzles using backtracking alg
 
 struct Game
 {
-  int board[81];
-  int emptyCellIndices[81];
-  int emptyCellIndicesArrSize;
+    int board[81];
+    int emptyCellIndices[81];
+    int emptyCellIndicesArrSize;
 };
 
 // Solve sudoku by using backtracking
 bool solveSudokuTillPos(int board[], int emptyCellIndices[], int emptyCellIndex)
 {
-  bool isSolvable = true;
-  int currentBoardPos = emptyCellIndices[emptyCellIndex];
+    bool isSolved = true;
+    int currentBoardPos = emptyCellIndices[emptyCellIndex];
 
-  while (board[currentBoardPos] <= 9 && isSolvable == true)
-  {
-    ++board[currentBoardPos];
-    if (board[currentBoardPos] > 9)
+    while (board[currentBoardPos] <= 9 && isSolved == true)
     {
-      board[currentBoardPos] = 0;
-      if (emptyCellIndex == 0)
-        isSolvable = false;
-      else
-        isSolvable = solveSudokuTillPos(board, emptyCellIndices, emptyCellIndex - 1);
+        ++board[currentBoardPos];
+        if (board[currentBoardPos] > 9)
+        {
+            board[currentBoardPos] = 0;
+            if (emptyCellIndex == 0)
+            {
+                isSolved = false;
+            }
+            else
+            {
+                isSolved = solveSudokuTillPos(board, emptyCellIndices, emptyCellIndex - 1);
+            }
+        }
+        else if (isValueLegal(board, currentBoardPos))
+        {
+            isSolved = true;
+            break;
+        }
     }
 
-    else if (isValueLegal(board, currentBoardPos))
-    {
-      isSolvable = true;
-      break;
-    }
-  }
-
-  return isSolvable;
+    return isSolved;
 }
 
 // Main function
 int main(void)
 {
-  struct Game game;
-  int board[81] = {0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 3, 0, 7, 4, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 2, 0, 8, 0, 0, 4, 0, 0, 1, 0, 6, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 7, 8, 0, 5, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0};
+    struct Game game;
+    game.emptyCellIndicesArrSize = 0;
 
-  memcpy(game.board, board, sizeof(game.board));
-  //memcpy(game.emptyCellIndices,, sizeof(game.board));
-  game.emptyCellIndicesArrSize = 0;
+    FILE *boardFile = fopen("board", "r");
 
-  for (short int i = 0; i < 81; ++i)
-  {
-    if (game.board[i] == 0)
+    if (boardFile == NULL)
     {
-      game.emptyCellIndices[game.emptyCellIndicesArrSize] = i;
-      ++game.emptyCellIndicesArrSize;
+        printf("error: can't open input file\n");
+        return -1;
     }
-  }
 
-  int i = 0;
-  while (i != game.emptyCellIndicesArrSize && solveSudokuTillPos(game.board, game.emptyCellIndices, i))
-    ++i;
+    for (int i = 0; i < 81; ++i)
+    {
+        if (fscanf(boardFile, "%d", &game.board[i]) != 1)
+        {
+            printf("error: can't read input file\n");
+            return -2;
+        }
 
-  if (i != game.emptyCellIndicesArrSize)
-    return -1;
+        if (game.board[i] == 0)
+        {
+            game.emptyCellIndices[game.emptyCellIndicesArrSize] = i;
+            ++game.emptyCellIndicesArrSize;
+        }
+    }
 
-  for (short int i = 0; i < 81; ++i)
-  {
-    if (i % 9 == 0)
-      printf("\n");
-    printf("%d ", game.board[i]);
-  }
+    int i = 0;
+    while (i != game.emptyCellIndicesArrSize && solveSudokuTillPos(game.board, game.emptyCellIndices, i))
+    {
+        ++i;
+    }
 
-  return 0;
+    if (i != game.emptyCellIndicesArrSize)
+    {
+        printf("error: the given sudoku board can't be solved\n");
+        return -3;
+    }
+
+    for (int i = 0; i < 81; ++i)
+    {
+        if (i % 9 == 0)
+        {
+            printf("\n");
+        }
+        printf("%d ", game.board[i]);
+    }
+
+    printf("\n");
+    return 0;
 }
