@@ -2,6 +2,8 @@
 File: main.c
 Author: Vivek Agrawal
 Purpose: Main program file for solving 9x9 sudoku puzzles using backtracking algorithm.
+
+Test cases from: http://sudopedia.enjoysudoku.com/Test_Cases.html
 *************************/
 
 #include <stdio.h>
@@ -12,23 +14,31 @@ Purpose: Main program file for solving 9x9 sudoku puzzles using backtracking alg
 
 struct Game
 {
-    int board[81];
+    unsigned char board[81];
     int emptyCellIndices[81];
     int emptyCellIndicesArrSize;
 };
 
 // Solve sudoku by using backtracking
-bool solveSudokuTillPos(int board[], int emptyCellIndices[], int emptyCellIndex)
+bool solveSudokuTillPos(unsigned char board[], int emptyCellIndices[], int emptyCellIndex)
 {
     bool isSolved = true;
     int currentBoardPos = emptyCellIndices[emptyCellIndex];
 
-    while (board[currentBoardPos] <= 9 && isSolved == true)
+    while (board[currentBoardPos] <= '9' && isSolved == true)
     {
-        ++board[currentBoardPos];
-        if (board[currentBoardPos] > 9)
+        if (board[currentBoardPos] == '.')
         {
-            board[currentBoardPos] = 0;
+            board[currentBoardPos] = '1';
+        }
+        else
+        {
+            ++board[currentBoardPos];
+        }
+
+        if (board[currentBoardPos] > '9')
+        {
+            board[currentBoardPos] = '0';
             if (emptyCellIndex == 0)
             {
                 isSolved = false;
@@ -48,12 +58,31 @@ bool solveSudokuTillPos(int board[], int emptyCellIndices[], int emptyCellIndex)
     return isSolved;
 }
 
+int solveSudoku(unsigned char board[], int emptyCellIndices[], int emptyCellIndicesArrSize)
+{
+    if (emptyCellIndicesArrSize > 0)
+    {
+        int i = 0;
+        while (i < emptyCellIndicesArrSize && solveSudokuTillPos(board, emptyCellIndices, i))
+        {
+            ++i;
+        }
+
+        if (emptyCellIndicesArrSize != i)
+        {
+            return -5;
+        }
+    }
+    return 0;
+}
+
 // Main function
 int main(void)
 {
+    // Declare a type of Game
     struct Game game;
-    game.emptyCellIndicesArrSize = 0;
 
+    // Open file and check if its valid
     FILE *boardFile = fopen("board", "r");
 
     if (boardFile == NULL)
@@ -62,40 +91,51 @@ int main(void)
         return -1;
     }
 
+    // Read game board from file
+    game.emptyCellIndicesArrSize = 0;
     for (int i = 0; i < 81; ++i)
     {
-        if (fscanf(boardFile, "%d", &game.board[i]) != 1)
+        unsigned char c = fgetc(boardFile);
+
+        if (c == '\n' || c == EOF)
         {
-            printf("error: can't read input file\n");
-            return -2;
+            if (i < 81)
+            {
+                printf("error: invalid number of elements in the board\n");
+                return -2;
+            }
+            else
+            {
+                printf("error: some input error occured\n");
+                return -3;
+            }
         }
 
-        if (game.board[i] == 0)
+        if (c == '.')
         {
             game.emptyCellIndices[game.emptyCellIndicesArrSize] = i;
             ++game.emptyCellIndicesArrSize;
         }
+        else if (c > '9' || c < '1')
+        {
+            printf("error: invalid board element found\n");
+            return -4;
+        }
+
+        game.board[i] = c;
     }
 
-    int i = 0;
-    while (i != game.emptyCellIndicesArrSize && solveSudokuTillPos(game.board, game.emptyCellIndices, i))
+    // Solve sudoku puzzle
+    if (solveSudoku(game.board, game.emptyCellIndices, game.emptyCellIndicesArrSize) == -4)
     {
-        ++i;
+        printf("No solution found for the provided input board.\n");
+        return -5;
     }
 
-    if (i != game.emptyCellIndicesArrSize)
-    {
-        printf("error: the given sudoku board can't be solved\n");
-        return -3;
-    }
-
+    // Print solved sudoku board
     for (int i = 0; i < 81; ++i)
     {
-        if (i % 9 == 0)
-        {
-            printf("\n");
-        }
-        printf("%d ", game.board[i]);
+        printf("%c", game.board[i]);
     }
 
     printf("\n");

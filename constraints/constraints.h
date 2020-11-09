@@ -7,4 +7,4 @@ Purpose: This file contains the prototypes for functions defined in constraints.
 #include <stdbool.h>
 
 // Check if the input value at `pos` is legal
-bool isValueLegal(int sudokuBoard[], short int pos);
+bool isValueLegal(unsigned char sudokuBoard[], int pos);
