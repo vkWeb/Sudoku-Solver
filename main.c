@@ -126,7 +126,7 @@ int main(void)
     }
 
     // Solve sudoku puzzle
-    if (solveSudoku(game.board, game.emptyCellIndices, game.emptyCellIndicesArrSize) == -4)
+    if (solveSudoku(game.board, game.emptyCellIndices, game.emptyCellIndicesArrSize) == -5)
     {
         printf("No solution found for the provided input board.\n");
         return -5;
